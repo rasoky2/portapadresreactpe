@@ -39,7 +39,11 @@ interface DashboardData {
   children: Child[]
   recentGrades: Grade[]
   attendance: Attendance[]
-  upcomingEvents: any[]
+  upcomingEvents: Array<{
+    Fecha: string
+    Descripcion: string
+    Tipo: string
+  }>
 }
 
 export default function ParentDashboard() {
@@ -57,26 +61,61 @@ export default function ParentDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Simular datos por ahora - en producción vendrían de la API
+      // Obtener datos reales de la API
+      const parentId = 3 // TODO: Obtener del contexto de sesión
+      
+      // Obtener hijos del padre
+      const childrenRes = await fetch(`/api/admin/students/linked/${parentId}`)
+      const childrenData = await childrenRes.json()
+      
+      // Obtener calificaciones recientes de todos los hijos
+      let allGrades: Grade[] = []
+      if (childrenData && childrenData.length > 0) {
+        for (const child of childrenData) {
+          const gradesRes = await fetch(`/api/parent/grades?childId=${child.IdHijo}`)
+          const gradesData = await gradesRes.json()
+          if (gradesData) {
+            // Agregar nombre del hijo a cada calificación
+            const gradesWithChildName = gradesData.map((grade: Grade) => ({
+              ...grade,
+              NombreHijo: child.NombreHijo
+            }))
+            allGrades = [...allGrades, ...gradesWithChildName]
+          }
+        }
+        // Ordenar por fecha y tomar las 5 más recientes
+        allGrades = allGrades.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime()).slice(0, 5)
+      }
+      
+      // Obtener asistencia reciente de todos los hijos
+      let allAttendance: Attendance[] = []
+      if (childrenData && childrenData.length > 0) {
+        for (const child of childrenData) {
+          const attendanceRes = await fetch(`/api/parent/attendance?childId=${child.IdHijo}`)
+          const attendanceData = await attendanceRes.json()
+          if (attendanceData) {
+            // Agregar nombre del hijo a cada registro de asistencia
+            const attendanceWithChildName = attendanceData.map((att: { Fecha: string; Asistio: number }) => ({
+              Fecha: att.Fecha,
+              Asistio: att.Asistio === 1,
+              NombreHijo: child.NombreHijo
+            }))
+            allAttendance = [...allAttendance, ...attendanceWithChildName]
+          }
+        }
+        // Ordenar por fecha y tomar los 5 más recientes
+        allAttendance = allAttendance.sort((a, b) => new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime()).slice(0, 5)
+      }
+      
+      // Obtener eventos próximos
+      const eventsRes = await fetch(`/api/admin/calendar`)
+      const eventsData = await eventsRes.json()
+      
       setData({
-        children: [
-          { IdHijo: 1, NombreHijo: 'Ana Pérez', Grado: '3.º Primaria' },
-          { IdHijo: 2, NombreHijo: 'Luis Pérez', Grado: '5.º Primaria' }
-        ],
-        recentGrades: [
-          { IdNota: 1, Materia: 'Matemáticas', Nota: 17, Fecha: '2025-01-14', Criterio: 'Suma y resta básica', NombreHijo: 'Ana Pérez' },
-          { IdNota: 2, Materia: 'Lengua', Nota: 18, Fecha: '2025-01-15', Criterio: 'Lectura comprensiva', NombreHijo: 'Ana Pérez' },
-          { IdNota: 3, Materia: 'Ciencias', Nota: 15, Fecha: '2025-01-16', Criterio: 'El cuerpo humano', NombreHijo: 'Luis Pérez' }
-        ],
-        attendance: [
-          { Fecha: '2025-01-14', Asistio: true, NombreHijo: 'Ana Pérez' },
-          { Fecha: '2025-01-15', Asistio: true, NombreHijo: 'Luis Pérez' },
-          { Fecha: '2025-01-16', Asistio: false, NombreHijo: 'Luis Pérez' }
-        ],
-        upcomingEvents: [
-          { Fecha: '2025-02-14', Descripcion: 'Día de San Valentín', Tipo: 'Festivo' },
-          { Fecha: '2025-03-15', Descripcion: 'Reunión de padres', Tipo: 'Reunión' }
-        ]
+        children: childrenData || [],
+        recentGrades: allGrades,
+        attendance: allAttendance,
+        upcomingEvents: eventsData || []
       })
     } catch (error) {
       console.error('Error cargando datos:', error)

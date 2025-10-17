@@ -68,7 +68,15 @@ export async function PUT(
     }
 
     // Asegurar campos requeridos por updateUser
-    const current = user as any
+    const current = user as {
+      Usuario: string
+      Contraseña: string
+      IdRol: number
+      Nombre: string
+      Apellido: string
+      Email: string
+      Telefono: string
+    }
     const payload = {
       usuario: userData.usuario ?? current.Usuario,
       contraseña: userData.contraseña ?? current.Contraseña,
@@ -80,7 +88,7 @@ export async function PUT(
     }
 
     // Actualizar usuario
-    await db.updateUser(userId, payload as any)
+    await db.updateUser(userId, payload)
 
     return NextResponse.json({
       message: 'Usuario actualizado exitosamente'

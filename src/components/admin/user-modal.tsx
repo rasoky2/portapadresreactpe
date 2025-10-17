@@ -21,11 +21,7 @@ interface User {
   Telefono?: string
 }
 
-interface Student {
-  IdHijo: number
-  NombreHijo: string
-  Edad: number
-}
+// Removed unused interface
 
 interface UserModalProps {
   isOpen: boolean

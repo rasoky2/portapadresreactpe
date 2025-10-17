@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('node:path')
 const { Database } = require('../dist/lib/database')
 

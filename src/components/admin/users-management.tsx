@@ -45,7 +45,7 @@ export default function UsersManagement() {
     user: User | null
   }>({ isOpen: false, user: null })
   const [deleting, setDeleting] = useState(false)
-  const { toasts, removeToast, showSuccess, showError, showWarning } = useToast()
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
   useEffect(() => {
     fetchUsers()

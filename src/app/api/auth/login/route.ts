@@ -15,7 +15,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar usuario en la base de datos
-    const user = await db.getUserByCredentials(username, password) as any
+    const user = await db.getUserByCredentials(username, password) as {
+      IdUsuario: number
+      Usuario: string
+      NombreRol: string
+      Nombre: string
+      Apellido: string
+      Email: string
+    } | null
 
     if (!user) {
       return NextResponse.json(

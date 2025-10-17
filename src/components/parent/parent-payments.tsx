@@ -370,7 +370,7 @@ export default function ParentPayments() {
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Completa tu pago en Mercado Pago</h3>
-                <p className="mt-2 text-sm text-gray-600">Se abrió una nueva pestaña con el Checkout. Una vez finalizado, presiona "Verificar pago" para actualizar el estado de la factura.</p>
+                <p className="mt-2 text-sm text-gray-600">Se abrió una nueva pestaña con el Checkout. Una vez finalizado, presiona &quot;Verificar pago&quot; para actualizar el estado de la factura.</p>
               </div>
             </div>
             <div className="mt-4 flex items-center gap-2">

@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('node:path')
 const fs = require('node:fs')
 const sqlite3 = require('sqlite3').verbose()

@@ -11,10 +11,7 @@ import {
   BookOpen, 
   BarChart3,
   Plus,
-  Settings,
-  Eye,
-  Edit,
-  Trash2
+  // Removed unused imports
 } from 'lucide-react'
 import Link from 'next/link'
 

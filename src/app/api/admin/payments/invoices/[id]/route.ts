@@ -20,7 +20,19 @@ export async function GET(
        JOIN Padres p ON f.IdPadre = p.IdPadre
        WHERE f.IdFactura = ?`,
       [id]
-    ) as any[]
+    ) as Array<{
+      IdFactura: number
+      IdPadre: number
+      IdHijo: number
+      FechaEmision: string
+      FechaVencimiento: string
+      Estado: string
+      Total: number
+      NombreHijo: string
+      ApellidoHijo: string
+      NombrePadre: string
+      ApellidoPadre: string
+    }>
 
     if (!facturas || facturas.length === 0) {
       return NextResponse.json({ message: 'Factura no encontrada' }, { status: 404 })
