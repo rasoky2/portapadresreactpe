@@ -223,7 +223,9 @@ export class Database {
   async getAllAlumnos() {
     try {
       const query = `
-        SELECT h.*, p.IdPadre, u.Usuario as PadreUsuario, 
+        SELECT h.*, 
+               p.IdPadre, p.NombrePadre, p.ApellidoPadre,
+               u.Usuario as PadreUsuario, u.Email, u.Telefono,
                g.NombreGrado, s.NombreSeccion, n.NombreNivel
         FROM Hijos h
         JOIN Padres p ON h.IdPadre = p.IdPadre
