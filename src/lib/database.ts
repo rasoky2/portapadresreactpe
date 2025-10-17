@@ -359,11 +359,14 @@ export class Database {
   // Crear estudiante
   async createStudent(studentData: StudentData) {
     try {
+      console.log('Creando estudiante en base de datos con datos:', JSON.stringify(studentData, null, 2))
+      
       const query = `
         INSERT INTO Hijos (NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
-      const result = await this.run(query, [
+      
+      const params = [
         studentData.nombreHijo,
         studentData.apellidoHijo,
         studentData.fechaNacimiento,
@@ -373,10 +376,17 @@ export class Database {
         studentData.idSeccion || null,
         studentData.codigoEstudiante || null,
         studentData.estado || 'Activo'
-      ])
+      ]
+      
+      console.log('Ejecutando query con parámetros:', { query, params })
+      
+      const result = await this.runWithInfo(query, params)
+      console.log('Resultado de la inserción:', result)
+      
       return result
     } catch (error) {
-      console.error('Error al crear estudiante:', error)
+      console.error('Error al crear estudiante en base de datos:', error)
+      console.error('Datos que causaron el error:', JSON.stringify(studentData, null, 2))
       throw error
     }
   }

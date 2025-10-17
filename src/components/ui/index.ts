@@ -4,3 +4,4 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 export { Label } from './label'
 export { Alert, AlertTitle, AlertDescription } from './alert'
 export { ToastContainer, useToast } from './toast'
+export { DatePickerComponent, DateRangePickerComponent } from './date-picker'

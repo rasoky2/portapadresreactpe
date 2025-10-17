@@ -109,21 +109,38 @@ export default function StudentsManagement() {
     idPadre: number
   }) => {
     try {
+      const payload = {
+        ...studentData,
+        fechaNacimiento: typeof studentData.fechaNacimiento === 'string' 
+          ? studentData.fechaNacimiento 
+          : studentData.fechaNacimiento?.toISOString().split('T')[0] || ''
+      }
+      
+      console.log('Enviando petición para crear estudiante:', payload)
+      
       const response = await fetch('/api/admin/students/create-direct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...studentData,
-          fechaNacimiento: studentData.fechaNacimiento?.toISOString().split('T')[0] || ''
-        }),
+        body: JSON.stringify(payload),
       })
+
+      console.log('Respuesta del servidor:', response.status, response.statusText)
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Error creando estudiante')
+        console.error('Error del servidor:', errorData)
+        const errorMessage = errorData.message || 'No se pudo registrar el estudiante. Por favor, intenta nuevamente.'
+        showError(
+          'Error al crear estudiante', 
+          errorMessage
+        )
+        throw new Error(`Error del servidor: ${errorMessage}`)
       }
+
+      const result = await response.json()
+      console.log('Estudiante creado exitosamente:', result)
 
       // Recargar la lista de estudiantes
       await fetchStudents()
@@ -132,11 +149,14 @@ export default function StudentsManagement() {
         `${studentData.nombreHijo} ${studentData.apellidoHijo} ha sido registrado correctamente`
       )
     } catch (error) {
-      // Error creando estudiante
-      showError(
-        'Error al crear estudiante', 
-        'No se pudo registrar el estudiante. Por favor, intenta nuevamente.'
-      )
+      console.error('Error en handleCreateStudent:', error)
+      // Error creando estudiante - solo mostrar si no se mostró ya un error específico
+      if (!(error instanceof Error && error.message.includes('Error del servidor:'))) {
+        showError(
+          'Error al crear estudiante', 
+          'No se pudo registrar el estudiante. Por favor, intenta nuevamente.'
+        )
+      }
       throw error
     }
   }

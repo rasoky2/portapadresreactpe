@@ -80,6 +80,7 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
 
   useEffect(() => {
     if (isOpen) {
+      console.log('Inicializando modal de crear estudiante')
       setFormData({
         nombreHijo: '',
         apellidoHijo: '',
@@ -120,6 +121,17 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
       setPadresFiltrados(filtrados)
     }
   }, [busquedaPadre, padres])
+
+  // Limpiar error de padre cuando se selecciona uno
+  useEffect(() => {
+    if (formData.idPadre && formData.idPadre > 0 && errors.idPadre) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.idPadre
+        return newErrors
+      })
+    }
+  }, [formData.idPadre, errors.idPadre])
 
   const fetchGrados = async () => {
     setLoadingGrados(true)
@@ -176,9 +188,18 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
   }
 
   const handlePadreSelect = (padreId: number) => {
-    handleInputChange('idPadre', padreId)
+    console.log('Seleccionando padre con ID:', padreId, 'tipo:', typeof padreId)
+    handleInputChange('idPadre', Number(padreId))
     // Limpiar búsqueda después de seleccionar
     setBusquedaPadre('')
+    // Limpiar error de padre si existe
+    if (errors.idPadre) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.idPadre
+        return newErrors
+      })
+    }
   }
 
   const handleBusquedaChange = (value: string) => {
@@ -211,6 +232,7 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
+    console.log('Validando formulario con datos:', formData)
 
     if (!formData.nombreHijo.trim()) {
       newErrors.nombreHijo = 'El nombre es requerido'
@@ -224,8 +246,8 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
       newErrors.fechaNacimiento = 'La fecha de nacimiento es requerida'
     } else {
       const age = calculateAge(formData.fechaNacimiento)
-      if (age < 3 || age > 18) {
-        newErrors.fechaNacimiento = 'La edad debe estar entre 3 y 18 años'
+      if (age < 3 || age > 19) {
+        newErrors.fechaNacimiento = 'La edad debe estar entre 3 y 19 años'
       }
     }
 
@@ -239,8 +261,12 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
 
     if (!formData.idPadre || formData.idPadre === 0) {
       newErrors.idPadre = 'Debe seleccionar un padre'
+      console.log('Error: Padre no seleccionado, valor actual:', formData.idPadre)
+    } else {
+      console.log('Padre seleccionado correctamente:', formData.idPadre, 'tipo:', typeof formData.idPadre)
     }
 
+    console.log('Errores encontrados:', newErrors)
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -248,7 +274,10 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('Validando formulario con datos:', formData)
+    
     if (!validateForm()) {
+      console.log('Validación falló, errores:', errors)
       showError('Error', 'Por favor corrige los errores en el formulario')
       return
     }
@@ -263,17 +292,31 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
         estado: 'Activo'
       } as any // Conversión temporal para compatibilidad
 
+      console.log('Enviando datos del estudiante:', studentData)
+
       await onSave(studentData)
       showSuccess(
         'Estudiante creado', 
         `${studentData.nombreHijo} ${studentData.apellidoHijo} ha sido registrado correctamente`
       )
       onClose()
-    } catch {
+    } catch (error) {
+      console.error('Error en handleSubmit:', error)
       // Error creando estudiante
+      let errorMessage = 'No se pudo registrar el estudiante. Por favor, intenta nuevamente.'
+      
+      if (error instanceof Error) {
+        // Si el error contiene "Error del servidor:", extraer solo el mensaje
+        if (error.message.includes('Error del servidor:')) {
+          errorMessage = error.message.replace('Error del servidor: ', '')
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
       showError(
         'Error al crear estudiante', 
-        'No se pudo registrar el estudiante. Por favor, intenta nuevamente.'
+        errorMessage
       )
     } finally {
       setLoading(false)
@@ -344,6 +387,9 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
                   onChange={(date) => handleInputChange('fechaNacimiento', date)}
                   placeholder="Seleccionar fecha de nacimiento"
                   className={errors.fechaNacimiento ? 'border-red-500' : ''}
+                  minAge={3}
+                  maxAge={19}
+                  showAgeRange={true}
                 />
               </div>
               {errors.fechaNacimiento && (
