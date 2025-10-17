@@ -563,3 +563,125 @@ INSERT OR IGNORE INTO DetalleFactura (
 ) VALUES (
   2, 2, 3, 1, 150.00, 150.00
 );
+
+-- Datos adicionales extendidos (cursos, docentes, alumnos y deudas)
+
+-- Materias adicionales
+INSERT OR IGNORE INTO Materias (IdMateria, NombreMateria, IdNivel, HorasSemanales) VALUES (19, 'Computación', 1, 2);
+INSERT OR IGNORE INTO Materias (IdMateria, NombreMateria, IdNivel, HorasSemanales) VALUES (20, 'Computación', 2, 3);
+INSERT OR IGNORE INTO Materias (IdMateria, NombreMateria, IdNivel, HorasSemanales) VALUES (21, 'Tutoría', 1, 1);
+INSERT OR IGNORE INTO Materias (IdMateria, NombreMateria, IdNivel, HorasSemanales) VALUES (22, 'Tutoría', 2, 1);
+
+-- Docentes y Padres adicionales
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (15, 'profalvaro', '123456', 2, 'Álvaro', 'Reyes', 'alvaro.reyes@colegio.edu.pe', '555-0108');
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (16, 'profmaria', '123456', 2, 'María', 'Salazar', 'maria.salazar@colegio.edu.pe', '555-0109');
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (17, 'profdiego', '123456', 2, 'Diego', 'Castro', 'diego.castro@colegio.edu.pe', '555-0110');
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (18, 'profelena', '123456', 2, 'Elena', 'Mendoza', 'elena.mendoza@colegio.edu.pe', '555-0111');
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (19, 'papaluis', '123456', 3, 'Luis', 'Ramos', 'luis.ramos@email.com', '555-0207');
+INSERT OR IGNORE INTO Usuarios (IdUsuario, Usuario, Contraseña, IdRol, Nombre, Apellido, Email, Telefono) VALUES (20, 'mamajulia', '123456', 3, 'Julia', 'Flores', 'julia.flores@email.com', '555-0208');
+
+INSERT OR IGNORE INTO Padres (IdPadre, IdUsuario, NombrePadre, ApellidoPadre, Telefono, Direccion, DNI) VALUES (7, 19, 'Luis', 'Ramos', '555-0222', 'Av. Los Próceres 789', '78901234');
+INSERT OR IGNORE INTO Padres (IdPadre, IdUsuario, NombrePadre, ApellidoPadre, Telefono, Direccion, DNI) VALUES (8, 20, 'Julia', 'Flores', '555-0223', 'Jr. Las Palmeras 321', '89012345');
+
+-- Hijos (alumnos) adicionales
+-- Primaria
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (22, 'Gabriela', 'Ramos', '2017-02-11', 8, 7, 2, 4, 'PRI-2025-013', 'Activo');
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (23, 'Tomás', 'Ramos', '2015-08-27', 10, 7, 4, 8, 'PRI-2025-014', 'Activo');
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (24, 'Mia', 'Flores', '2016-12-05', 8, 8, 3, 6, 'PRI-2025-015', 'Activo');
+-- Secundaria
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (25, 'Franco', 'Flores', '2012-06-14', 13, 8, 8, 16, 'SEC-2025-010', 'Activo');
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (26, 'Sara', 'Ramos', '2011-03-22', 14, 7, 9, 18, 'SEC-2025-011', 'Activo');
+-- Sin vincular (para pruebas)
+INSERT OR IGNORE INTO Hijos (IdHijo, NombreHijo, ApellidoHijo, FechaNacimiento, Edad, IdPadre, IdGrado, IdSeccion, CodigoEstudiante, Estado) VALUES (27, 'Hugo', 'Medina', '2016-04-30', 9, NULL, 5, 10, 'PRI-2025-016', 'Activo');
+
+-- Asignaciones Docente-Materia-Grado para nuevas materias/docentes
+-- Computación Primaria (IdMateria = 19)
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (23, 15, 19, 2, 4);
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (24, 15, 19, 3, 6);
+-- Tutoría Primaria (IdMateria = 21)
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (25, 16, 21, 4, 8);
+-- Computación Secundaria (IdMateria = 20)
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (26, 17, 20, 8, 16);
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (27, 17, 20, 9, 18);
+-- Tutoría Secundaria (IdMateria = 22)
+INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (28, 18, 22, 9, 18);
+
+-- Algunas notas para los nuevos alumnos en sus materias respectivas
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (37, 22, 19, 15, 'Unidad 1', 'Manejo básico PC', 9.0, 0.3, 'Parcial', '2025-10-10');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (38, 23, 21, 16, 'Unidad 1', 'Habilidades socioemocionales', 8.5, 0.3, 'Parcial', '2025-10-11');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (39, 24, 19, 15, 'Unidad 1', 'Ofimática básica', 8.0, 0.3, 'Parcial', '2025-10-12');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (40, 25, 20, 17, 'Unidad 1', 'Hoja de cálculo', 8.5, 0.3, 'Parcial', '2025-10-12');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (41, 26, 22, 18, 'Unidad 1', 'Proyecto personal', 9.0, 0.3, 'Parcial', '2025-10-13');
+
+-- Facturas (deudas) adicionales para el mes actual 2025-10
+-- Gabriela Ramos (IdHijo = 22) - Pensión Primaria 1 mes (S/ 150)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  3, 7, 22, 'FAC-2025-10-0003', '2025-10-06', '2025-10-30', 'Pendiente', 150.00, 0.00, 150.00, 'Pensión Primaria 1 mes - Octubre'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  3, 3, 3, 1, 150.00, 150.00
+);
+
+-- Tomás Ramos (IdHijo = 23) - Pensión Primaria 2 meses (S/ 300)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  4, 7, 23, 'FAC-2025-10-0004', '2025-10-06', '2025-11-15', 'Pendiente', 300.00, 0.00, 300.00, 'Pensión Primaria 2 meses - Oct/Nov'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  4, 4, 4, 1, 300.00, 300.00
+);
+
+-- Mia Flores (IdHijo = 24) - Pensión Primaria 1 mes (S/ 150)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  5, 8, 24, 'FAC-2025-10-0005', '2025-10-07', '2025-10-30', 'Pendiente', 150.00, 0.00, 150.00, 'Pensión Primaria 1 mes - Octubre'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  5, 5, 3, 1, 150.00, 150.00
+);
+
+-- Franco Flores (IdHijo = 25) - Pensión Secundaria 1 mes (S/ 180)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  6, 8, 25, 'FAC-2025-10-0006', '2025-10-07', '2025-10-30', 'Pendiente', 180.00, 0.00, 180.00, 'Pensión Secundaria 1 mes - Octubre'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  6, 6, 7, 1, 180.00, 180.00
+);
+
+-- Sara Ramos (IdHijo = 26) - Pensión Secundaria 3 meses (S/ 540)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  7, 7, 26, 'FAC-2025-10-0007', '2025-10-08', '2025-12-15', 'Pendiente', 540.00, 0.00, 540.00, 'Pensión Secundaria 3 meses - Oct/Nov/Dic'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  7, 7, 9, 1, 540.00, 540.00
+);
+
+-- Hugo Medina (IdHijo = 27) - Pensión Primaria 1 mes (sin padre vinculado aún)
+INSERT OR IGNORE INTO Facturas (
+  IdFactura, IdPadre, IdHijo, NumeroFactura, FechaEmision, FechaVencimiento, Estado, Subtotal, Descuento, Total, Observaciones
+) VALUES (
+  8, NULL, 27, 'FAC-2025-10-0008', '2025-10-09', '2025-10-30', 'Pendiente', 150.00, 0.00, 150.00, 'Pensión Primaria 1 mes - Octubre (pendiente de vincular)'
+);
+INSERT OR IGNORE INTO DetalleFactura (
+  IdDetalle, IdFactura, IdConcepto, Cantidad, PrecioUnitario, Subtotal
+) VALUES (
+  8, 8, 3, 1, 150.00, 150.00
+);
