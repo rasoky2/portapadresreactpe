@@ -5,10 +5,11 @@ const db = new Database()
 
 export async function GET(
   _request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = Number(context.params.id)
+    const { id: idParam } = await context.params
+    const id = Number(idParam)
     if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 })
 
     // Obtener factura

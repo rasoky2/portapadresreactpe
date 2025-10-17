@@ -132,7 +132,7 @@ export default function GradeModal({ isOpen, onClose, onSave, mode, grade }: Gra
         })
       }
       await onSave({ idHijo: form.idHijo, idMateria: form.idMateria, idUsuario: form.idUsuario, nota: 0, fecha: form.fecha } as any, grade?.IdNota)
-      showSuccess(mode === 'create' ? 'Nota creada' : 'Nota actualizada', form.criterio || form.fecha)
+      showSuccess(mode === 'create' ? 'Nota creada' : 'Nota actualizada', form.fecha)
       onClose()
     } catch {
       showError('Error', 'No se pudo guardar la nota')

@@ -99,12 +99,14 @@ export default function StudentsManagement() {
   const handleCreateStudent = async (studentData: {
     nombreHijo: string
     apellidoHijo: string
-    fechaNacimiento: string
+    fechaNacimiento: Date | undefined
     edad: number
     idGrado: number
     idSeccion: number
     codigoEstudiante: string
     estado: string
+    vincularPadre: boolean
+    idPadre: number
   }) => {
     try {
       const response = await fetch('/api/admin/students/create-direct', {
@@ -112,7 +114,10 @@ export default function StudentsManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(studentData),
+        body: JSON.stringify({
+          ...studentData,
+          fechaNacimiento: studentData.fechaNacimiento?.toISOString().split('T')[0] || ''
+        }),
       })
 
       if (!response.ok) {

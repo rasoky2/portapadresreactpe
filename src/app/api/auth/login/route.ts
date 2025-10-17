@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar usuario en la base de datos
-    const user = await db.getUserByCredentials(username, password)
+    const user = await db.getUserByCredentials(username, password) as any
 
     if (!user) {
       return NextResponse.json(
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     // Crear sesión (en un proyecto real, usarías JWT o cookies seguras)
     const session = {
       user: {
-        id: user.id,
-        username: user.username,
+        id: user.IdUsuario,
+        username: user.Usuario,
         NombreRol: user.NombreRol,
         Nombre: user.Nombre,
         Apellido: user.Apellido,

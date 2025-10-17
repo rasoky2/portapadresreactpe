@@ -32,7 +32,7 @@ export class Database {
   public all: (sql: string, params?: unknown[]) => Promise<unknown[]>
   
   // Helper para obtener lastID/changes de operaciones de escritura
-  private runWithInfo(sql: string, params: unknown[] = []): Promise<{ lastID: number; changes: number }> {
+  public runWithInfo(sql: string, params: unknown[] = []): Promise<{ lastID: number; changes: number }> {
     return new Promise((resolve, reject) => {
       // Usamos function() para acceder a this.lastID del Statement
       this.db.run(sql, params as unknown[], function (this: sqlite3.RunResult, err: Error | null) {

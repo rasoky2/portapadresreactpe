@@ -77,7 +77,6 @@ export default function SettingsManagement() {
             schoolEmail: settings.schoolEmail,
             academicYear: settings.academicYear,
             currentBimester: settings.semester.replace('Bimestre ', ''),
-            gradingScale: String(settings.gradingScale),
             maxStudentsPerClass: String(settings.maxStudentsPerClass),
             attendanceThreshold: String(settings.attendanceThreshold)
           })

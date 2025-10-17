@@ -5,10 +5,11 @@ const db = new Database()
 
 export async function GET(
   request: Request,
-  { params }: { params: { parentId: string } }
+  { params }: { params: Promise<{ parentId: string }> }
 ) {
   try {
-    const parentId = parseInt(params.parentId)
+    const { parentId: parentIdParam } = await params
+    const parentId = parseInt(parentIdParam)
     
     if (isNaN(parentId)) {
       return NextResponse.json(

@@ -17,7 +17,7 @@ export async function GET() {
       FROM Asistencia 
       WHERE Fecha >= date('now', '-7 days') AND Asistio = 1
     `
-    const attendanceResult = await db.get(attendanceQuery)
+    const attendanceResult = await db.get(attendanceQuery) as { count: number } | undefined
 
     // Obtener eventos próximos (próximos 7 días)
     const eventsQuery = `
@@ -25,7 +25,7 @@ export async function GET() {
       FROM Calendario 
       WHERE Fecha BETWEEN date('now') AND date('now', '+7 days')
     `
-    const eventsResult = await db.get(eventsQuery)
+    const eventsResult = await db.get(eventsQuery) as { count: number } | undefined
 
     const stats = {
       totalUsers: users.length,
