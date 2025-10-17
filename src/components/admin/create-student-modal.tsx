@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast, ToastContainer } from '@/components/ui/toast'
-import { X, Save, User, Calendar, GraduationCap, BookOpen } from 'lucide-react'
+import { DatePickerComponent } from '@/components/ui/date-picker'
+import { X, Save, User, GraduationCap, BookOpen } from 'lucide-react'
 
 interface Grade {
   IdGrado: number
@@ -36,14 +37,14 @@ interface Parent {
 interface StudentData {
   nombreHijo: string
   apellidoHijo: string
-  fechaNacimiento: string
+  fechaNacimiento: Date | undefined
   edad: number
   idGrado: number
   idSeccion: number
   codigoEstudiante: string
   estado: string
-  vincularPadre: boolean
-  idPadre?: number
+  vincularPadre: true // Siempre obligatorio
+  idPadre: number // Ahora es obligatorio
 }
 
 interface CreateStudentModalProps {
@@ -56,14 +57,14 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
   const [formData, setFormData] = useState<StudentData>({
     nombreHijo: '',
     apellidoHijo: '',
-    fechaNacimiento: '',
+    fechaNacimiento: undefined,
     edad: 0,
     idGrado: 0,
     idSeccion: 0,
     codigoEstudiante: '',
     estado: 'Activo',
-    vincularPadre: false,
-    idPadre: undefined
+    vincularPadre: true, // Siempre obligatorio
+    idPadre: 0
   })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -82,14 +83,14 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
       setFormData({
         nombreHijo: '',
         apellidoHijo: '',
-        fechaNacimiento: '',
+        fechaNacimiento: undefined,
         edad: 0,
         idGrado: 0,
         idSeccion: 0,
         codigoEstudiante: '',
         estado: 'Activo',
-        vincularPadre: false,
-        idPadre: undefined
+        vincularPadre: true, // Siempre obligatorio
+        idPadre: 0
       })
       setErrors({})
       setBusquedaPadre('')
@@ -163,7 +164,7 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
     }
   }
 
-  const handleInputChange = (field: string, value: string | number | boolean) => {
+  const handleInputChange = (field: string, value: string | number | boolean | Date | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors(prev => {
@@ -184,13 +185,12 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
     setBusquedaPadre(value)
   }
 
-  const calculateAge = (fechaNacimiento: string) => {
+  const calculateAge = (fechaNacimiento: Date | undefined) => {
     if (!fechaNacimiento) return 0
     const today = new Date()
-    const birthDate = new Date(fechaNacimiento)
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    let age = today.getFullYear() - fechaNacimiento.getFullYear()
+    const monthDiff = today.getMonth() - fechaNacimiento.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < fechaNacimiento.getDate())) {
       age--
     }
     return age
@@ -237,7 +237,7 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
       newErrors.idSeccion = 'Debe seleccionar una sección'
     }
 
-    if (formData.vincularPadre && !formData.idPadre) {
+    if (!formData.idPadre || formData.idPadre === 0) {
       newErrors.idPadre = 'Debe seleccionar un padre'
     }
 
@@ -258,9 +258,10 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
       const age = calculateAge(formData.fechaNacimiento)
       const studentData = {
         ...formData,
+        fechaNacimiento: formData.fechaNacimiento?.toISOString().split('T')[0] || '',
         edad: age,
         estado: 'Activo'
-      }
+      } as any // Conversión temporal para compatibilidad
 
       await onSave(studentData)
       showSuccess(
@@ -337,16 +338,13 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
             {/* Fecha de Nacimiento */}
             <div>
               <Label htmlFor="fechaNacimiento" className="text-gray-700">Fecha de Nacimiento</Label>
-              <div className="relative mt-1">
-                <Input
-                  id="fechaNacimiento"
-                  name="fechaNacimiento"
-                  type="date"
+              <div className="mt-1">
+                <DatePickerComponent
                   value={formData.fechaNacimiento}
-                  onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
+                  onChange={(date) => handleInputChange('fechaNacimiento', date)}
+                  placeholder="Seleccionar fecha de nacimiento"
                   className={errors.fechaNacimiento ? 'border-red-500' : ''}
                 />
-                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               </div>
               {errors.fechaNacimiento && (
                 <p className="text-sm text-red-500 mt-1">{errors.fechaNacimiento}</p>
@@ -446,25 +444,20 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
               </p>
             </div>
 
-            {/* Vincular Padre */}
+            {/* Vincular Padre - Obligatorio */}
             <div className="border-t pt-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <input
-                  type="checkbox"
-                  id="vincularPadre"
-                  checked={formData.vincularPadre}
-                  onChange={(e) => handleInputChange('vincularPadre', e.target.checked)}
-                  className="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded"
-                />
-                <Label htmlFor="vincularPadre" className="text-gray-700 font-medium">
-                  Vincular con un padre existente
+              <div className="mb-4">
+                <Label className="text-gray-700 font-medium text-lg">
+                  Vincular con un padre existente *
                 </Label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Es obligatorio vincular el estudiante con un padre registrado
+                </p>
               </div>
 
-              {formData.vincularPadre && (
-                <div>
-                  <Label htmlFor="busquedaPadre" className="text-gray-700">Buscar Padre</Label>
-                  <div className="relative mt-1">
+              <div>
+                <Label htmlFor="busquedaPadre" className="text-gray-700">Buscar Padre</Label>
+                <div className="relative mt-1">
                     <Input
                       id="busquedaPadre"
                       type="text"
@@ -557,10 +550,9 @@ export default function CreateStudentModal({ isOpen, onClose, onSave }: CreateSt
                   )}
                   
                   <p className="text-xs text-gray-500 mt-2">
-                    Opcional: Puedes vincular el estudiante con un padre existente o dejarlo sin vincular
+                    Requerido: Debes seleccionar un padre para poder crear el estudiante
                   </p>
-                </div>
-              )}
+              </div>
             </div>
 
             {/* Botones */}

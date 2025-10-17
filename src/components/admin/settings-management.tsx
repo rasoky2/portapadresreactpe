@@ -1,20 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
-  Settings, 
   Save, 
   Database,
-  Users,
   Shield,
   Globe,
-  Mail,
-  Phone,
-  MapPin,
   Clock
 } from 'lucide-react'
 
@@ -37,8 +32,8 @@ export default function SettingsManagement() {
     schoolAddress: 'Calle Principal 123, Ciudad',
     schoolPhone: '+1 234 567 8900',
     schoolEmail: 'info@colegiosanjose.edu',
-    academicYear: '2024-2025',
-    semester: 'Primer Semestre',
+    academicYear: '2025',
+    semester: 'Bimestre 1',
     maxStudentsPerClass: 30,
     attendanceThreshold: 80,
     mpAccessToken: ''
@@ -47,7 +42,7 @@ export default function SettingsManagement() {
   const [loading, setLoading] = useState(false)
 
   // Cargar token existente desde DB
-  useState(() => {
+  useEffect(() => {
     fetch('/api/admin/settings/mp-token')
       .then(r => r.json())
       .then(data => {
@@ -56,7 +51,7 @@ export default function SettingsManagement() {
         }
       })
       .catch(() => {})
-  })
+  }, [])
 
   const handleInputChange = (field: keyof SystemSettings, value: string | number | boolean) => {
     setSettings(prev => ({
@@ -180,11 +175,20 @@ export default function SettingsManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="academicYear">Año Académico</Label>
-                <Input
+                <select
                   id="academicYear"
                   value={settings.academicYear}
                   onChange={(e) => handleInputChange('academicYear', e.target.value)}
-                />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
+                >
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="semester">Bimestre actual</Label>
@@ -207,7 +211,7 @@ export default function SettingsManagement() {
                   id="maxStudents"
                   type="number"
                   value={settings.maxStudentsPerClass}
-                  onChange={(e) => handleInputChange('maxStudentsPerClass', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('maxStudentsPerClass', Number.parseInt(e.target.value, 10))}
                 />
               </div>
               {/* Escala fija a 20 - removida del formulario */}
@@ -217,7 +221,7 @@ export default function SettingsManagement() {
                   id="attendanceThreshold"
                   type="number"
                   value={settings.attendanceThreshold}
-                  onChange={(e) => handleInputChange('attendanceThreshold', parseInt(e.target.value))}
+                  onChange={(e) => handleInputChange('attendanceThreshold', Number.parseInt(e.target.value, 10))}
                 />
               </div>
             </div>

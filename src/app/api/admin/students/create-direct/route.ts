@@ -15,6 +15,14 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validar que se haya seleccionado un padre
+    if (!studentData.idPadre || studentData.idPadre === 0) {
+      return NextResponse.json(
+        { message: 'Debe seleccionar un padre para el estudiante' },
+        { status: 400 }
+      )
+    }
+
     // Crear el estudiante
     const result = await db.createStudent({
       nombreHijo: studentData.nombreHijo,
@@ -25,7 +33,7 @@ export async function POST(request: Request) {
       idSeccion: studentData.idSeccion || null,
       codigoEstudiante: studentData.codigoEstudiante || null,
       estado: studentData.estado || 'Activo',
-      idPadre: studentData.idPadre || null
+      idPadre: studentData.idPadre
     })
 
     return NextResponse.json({ 

@@ -33,6 +33,23 @@ interface User {
   NombreRol: string
 }
 
+interface Invoice {
+  IdFactura: number
+  IdPadre: number
+  NumeroFactura: string
+  Estado: string
+  Total: number
+  NombrePadre?: string
+  ApellidoPadre?: string
+}
+
+interface CalendarEvent {
+  IdEvento?: number
+  Fecha: string
+  Descripcion: string
+  Tipo?: string
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -43,6 +60,8 @@ export default function AdminDashboard() {
     upcomingEvents: 0
   })
   const [users, setUsers] = useState<User[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -56,10 +75,15 @@ export default function AdminDashboard() {
       const statsData = await statsResponse.json()
       setStats(statsData)
 
-      // Obtener usuarios
-      const usersResponse = await fetch('/api/admin/users')
-      const usersData = await usersResponse.json()
-      setUsers(usersData)
+      // Obtener facturas e inferir deudas por padre (Pendiente/Vencida)
+      const invRes = await fetch('/api/admin/payments/invoices')
+      const invData = await invRes.json()
+      setInvoices(invData)
+
+      // Obtener eventos
+      const evRes = await fetch('/api/admin/calendar')
+      const evData = await evRes.json()
+      setEvents(evData)
     } catch (error) {
       console.error('Error cargando datos:', error)
     } finally {
@@ -97,6 +121,28 @@ export default function AdminDashboard() {
         })}
         <circle cx={50} cy={50} r={28} fill="white" />
       </svg>
+    )
+  }
+
+  // Gráfico de barras simple sin dependencias
+  const BarChart = ({ data }: { data: { label: string; value: number; className: string }[] }) => {
+    const max = Math.max(...data.map(d => d.value), 1)
+    return (
+      <div className="flex items-end gap-8">
+        {data.map((d, i) => (
+          <div key={i} className="flex flex-col items-center">
+            <div className="relative h-24 w-8 bg-gray-100 rounded">
+              <div
+                className={`absolute bottom-0 left-0 right-0 rounded-t ${d.className}`}
+                style={{ height: `${Math.round((d.value / max) * 100)}%` }}
+                title={`${d.label}: ${d.value}`}
+              />
+            </div>
+            <div className="mt-2 text-xs font-semibold text-gray-700">{d.value}</div>
+            <div className="text-[10px] text-gray-500">{d.label}</div>
+          </div>
+        ))}
+      </div>
     )
   }
 
@@ -188,69 +234,82 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Users Table */}
+          {/* Deudas por Padre */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Usuarios del Sistema</CardTitle>
+                <CardTitle>Deudas de Padres</CardTitle>
                 <CardDescription>
-                  Gestiona todos los usuarios registrados en el portal
+                  Facturas pendientes y vencidas agrupadas por padre
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user.IdUsuario} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-brand-600" />
+                {(() => {
+                  const grouped = invoices
+                    .filter((f: any) => f.Estado === 'Pendiente' || f.Estado === 'Vencida')
+                    .reduce<Record<number, { nombre: string; total: number; cantidad: number }>>((acc, f: any) => {
+                      const key = f.IdPadre
+                      const nombre = `${f.NombrePadre || ''} ${f.ApellidoPadre || ''}`.trim() || `Padre #${key}`
+                      if (!acc[key]) acc[key] = { nombre, total: 0, cantidad: 0 }
+                      acc[key].total += Number(f.Total || 0)
+                      acc[key].cantidad += 1
+                      return acc
+                    }, {})
+                  const rows = Object.entries(grouped)
+                    .map(([id, v]) => ({ id, ...v }))
+                    .sort((a, b) => b.total - a.total)
+
+                  if (rows.length === 0) {
+                    return <p className="text-sm text-gray-500">No hay deudas pendientes.</p>
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      {rows.map((row) => (
+                        <div key={row.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-rose-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{row.nombre}</p>
+                              <p className="text-xs text-gray-500">{row.cantidad} factura(s) pendiente(s)</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-semibold text-gray-900">S/ {row.total.toFixed(2)}</div>
+                            <div className="text-xs text-gray-500">Total adeudado</div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{user.Usuario}</p>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.NombreRol)}`}>
-                            {user.NombreRol}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )
+                })()}
               </CardContent>
             </Card>
           </div>
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            {/* Gráfico de distribución de usuarios por rol */}
+            {/* Gráfico de padres y alumnos registrados (barras y colores del tema) */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <BarChart3 className="w-4 h-4 mr-2" /> Distribución de Usuarios por Rol
+                  <BarChart3 className="w-4 h-4 mr-2" /> Padres y Alumnos Registrados
                 </CardTitle>
-                <CardDescription>Administradores, Docentes y Padres</CardDescription>
+                <CardDescription>Totales actuales en el sistema</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4">
-                  <DonutChart segments={[
-                    { value: Math.max(stats.totalUsers - stats.totalTeachers - stats.totalParents, 0), color: '#ef4444' },
-                    { value: stats.totalTeachers, color: '#3b82f6' },
-                    { value: stats.totalParents, color: '#10b981' }
-                  ]} />
+                <div className="flex items-center gap-6">
+                  <BarChart
+                    data={[
+                      { label: 'Alumnos', value: stats.totalStudents, className: 'bg-brand-600' },
+                      { label: 'Padres', value: stats.totalParents, className: 'bg-emerald-600' }
+                    ]}
+                  />
                   <div className="text-sm space-y-1">
-                    <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 bg-red-500 rounded-sm" /> Administradores: {Math.max(stats.totalUsers - stats.totalTeachers - stats.totalParents, 0)}</div>
-                    <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 bg-blue-500 rounded-sm" /> Docentes: {stats.totalTeachers}</div>
-                    <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 bg-emerald-500 rounded-sm" /> Padres: {stats.totalParents}</div>
+                    <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 bg-brand-600 rounded-sm" /> Alumnos</div>
+                    <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 bg-emerald-600 rounded-sm" /> Padres</div>
                   </div>
                 </div>
               </CardContent>
@@ -292,28 +351,23 @@ export default function AdminDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Actividad Reciente</CardTitle>
-                <CardDescription>
-                  Últimas acciones en el sistema
-                </CardDescription>
+                <CardTitle>Próximos Eventos</CardTitle>
+                <CardDescription>Calendario del colegio</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <p className="text-sm text-gray-600">Usuario admin inició sesión</p>
-                    <span className="text-xs text-gray-400">hace 5 min</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <p className="text-sm text-gray-600">Nuevo estudiante registrado</p>
-                    <span className="text-xs text-gray-400">hace 1 hora</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <p className="text-sm text-gray-600">Evento creado: Reunión de padres</p>
-                    <span className="text-xs text-gray-400">hace 2 horas</span>
-                  </div>
+                  {events.slice(0, 6).map((e, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-brand-600 rounded-full"></div>
+                      <div className="text-sm">
+                        <p className="text-gray-800">{e.Descripcion}</p>
+                        <p className="text-xs text-gray-500">{new Date(e.Fecha).toLocaleDateString('es-PE')}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {events.length === 0 && (
+                    <p className="text-sm text-gray-500">No hay eventos próximos.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
