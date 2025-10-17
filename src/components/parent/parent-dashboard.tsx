@@ -17,7 +17,7 @@ import {
 interface Child {
   IdHijo: number
   NombreHijo: string
-  Edad: number
+  Grado: string
 }
 
 interface Grade {
@@ -26,11 +26,13 @@ interface Grade {
   Nota: number
   Fecha: string
   Criterio: string
+  NombreHijo?: string
 }
 
 interface Attendance {
   Fecha: string
   Asistio: boolean
+  NombreHijo?: string
 }
 
 interface DashboardData {
@@ -58,22 +60,22 @@ export default function ParentDashboard() {
       // Simular datos por ahora - en producción vendrían de la API
       setData({
         children: [
-          { IdHijo: 1, NombreHijo: 'Ana Pérez', Edad: 8 },
-          { IdHijo: 2, NombreHijo: 'Luis Pérez', Edad: 10 }
+          { IdHijo: 1, NombreHijo: 'Ana Pérez', Grado: '3.º Primaria' },
+          { IdHijo: 2, NombreHijo: 'Luis Pérez', Grado: '5.º Primaria' }
         ],
         recentGrades: [
-          { IdNota: 1, Materia: 'Matemáticas', Nota: 8.5, Fecha: '2024-01-15', Criterio: 'Suma y resta básica' },
-          { IdNota: 2, Materia: 'Lengua', Nota: 9.0, Fecha: '2024-01-16', Criterio: 'Lectura comprensiva' },
-          { IdNota: 3, Materia: 'Ciencias', Nota: 7.5, Fecha: '2024-01-17', Criterio: 'El cuerpo humano' }
+          { IdNota: 1, Materia: 'Matemáticas', Nota: 17, Fecha: '2025-01-14', Criterio: 'Suma y resta básica', NombreHijo: 'Ana Pérez' },
+          { IdNota: 2, Materia: 'Lengua', Nota: 18, Fecha: '2025-01-15', Criterio: 'Lectura comprensiva', NombreHijo: 'Ana Pérez' },
+          { IdNota: 3, Materia: 'Ciencias', Nota: 15, Fecha: '2025-01-16', Criterio: 'El cuerpo humano', NombreHijo: 'Luis Pérez' }
         ],
         attendance: [
-          { Fecha: '2024-01-15', Asistio: true },
-          { Fecha: '2024-01-16', Asistio: true },
-          { Fecha: '2024-01-17', Asistio: false }
+          { Fecha: '2025-01-14', Asistio: true, NombreHijo: 'Ana Pérez' },
+          { Fecha: '2025-01-15', Asistio: true, NombreHijo: 'Luis Pérez' },
+          { Fecha: '2025-01-16', Asistio: false, NombreHijo: 'Luis Pérez' }
         ],
         upcomingEvents: [
-          { Fecha: '2024-02-14', Descripcion: 'Día de San Valentín', Tipo: 'Festivo' },
-          { Fecha: '2024-03-15', Descripcion: 'Reunión de padres', Tipo: 'Reunión' }
+          { Fecha: '2025-02-14', Descripcion: 'Día de San Valentín', Tipo: 'Festivo' },
+          { Fecha: '2025-03-15', Descripcion: 'Reunión de padres', Tipo: 'Reunión' }
         ]
       })
     } catch (error) {
@@ -83,9 +85,9 @@ export default function ParentDashboard() {
     }
   }
 
-  const getGradeColor = (nota: number) => {
-    if (nota >= 9) return 'text-green-600'
-    if (nota >= 7) return 'text-yellow-600'
+  const getGradeColor = (nota20: number) => {
+    if (nota20 >= 16) return 'text-green-600'
+    if (nota20 >= 11) return 'text-yellow-600'
     return 'text-red-600'
   }
 
@@ -150,12 +152,14 @@ export default function ParentDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">
               {data.recentGrades.length > 0 
-                ? (data.recentGrades.reduce((sum, grade) => sum + grade.Nota, 0) / data.recentGrades.length).toFixed(1)
+                ? (
+                    data.recentGrades.reduce((sum, grade) => sum + grade.Nota, 0) / data.recentGrades.length
+                  ).toFixed(1)
                 : '0.0'
               }
             </div>
             <p className="text-xs text-muted-foreground">
-              Últimas calificaciones
+              Últimas calificaciones (escala 0–20)
             </p>
           </CardContent>
         </Card>
@@ -186,34 +190,40 @@ export default function ParentDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {data.recentGrades.map((grade) => (
-                  <div key={grade.IdNota} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
-                        <BookOpen className="w-5 h-5 text-brand-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{grade.Materia}</p>
-                        <p className="text-sm text-gray-500">{grade.Criterio}</p>
-                        <p className="text-xs text-gray-400">{new Date(grade.Fecha).toLocaleDateString()}</p>
-                      </div>
+              <div className="space-y-6">
+                {Object.entries(
+                  data.recentGrades.reduce<Record<string, Grade[]>>((acc, g) => {
+                    const key = g.NombreHijo || 'Sin nombre'
+                    if (!acc[key]) acc[key] = []
+                    acc[key].push(g)
+                    return acc
+                  }, {})
+                ).map(([student, grades]) => (
+                  <div key={student}>
+                    <div className="mb-2">
+                      <p className="text-sm font-semibold text-gray-700">{student}</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-2xl font-bold ${getGradeColor(grade.Nota)}`}>
-                        {grade.Nota}
-                      </span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < Math.floor(grade.Nota / 2) ? 'text-yellow-400' : 'text-gray-300'
-                            }`}
-                            fill="currentColor"
-                          />
-                        ))}
-                      </div>
+                    <div className="space-y-3">
+                      {grades.map((grade) => (
+                        <div key={grade.IdNota} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center">
+                              <BookOpen className="w-5 h-5 text-brand-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">{grade.Materia}</p>
+                              <p className="text-sm text-gray-500">{grade.Criterio}</p>
+                              <p className="text-xs text-gray-400">{new Date(grade.Fecha).toLocaleDateString('es-PE')}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-2xl font-bold ${getGradeColor(grade.Nota)}`}>
+                              {grade.Nota}
+                            </span>
+                            <span className="text-xs text-gray-500">/ 20</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -241,7 +251,7 @@ export default function ParentDashboard() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{child.NombreHijo}</p>
-                      <p className="text-sm text-gray-500">{child.Edad} años</p>
+                      <p className="text-sm text-gray-500">{child.Grado}</p>
                     </div>
                   </div>
                 ))}
@@ -267,8 +277,9 @@ export default function ParentDashboard() {
                       ) : (
                         <AlertCircle className="w-5 h-5 text-red-500" />
                       )}
-                      <span className="text-sm text-gray-900">
-                        {new Date(attendance.Fecha).toLocaleDateString()}
+                      <span className={`text-sm ${attendance.Asistio ? 'text-gray-900' : 'text-red-700 font-semibold'}`}>
+                        {attendance.NombreHijo ? `${attendance.NombreHijo} — ` : ''}
+                        {new Date(attendance.Fecha).toLocaleDateString('es-PE')}
                       </span>
                     </div>
                     <span className={`text-sm font-medium ${

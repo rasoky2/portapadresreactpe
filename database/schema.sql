@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS Notas (
     Bimestre INTEGER NOT NULL DEFAULT 1 CHECK (Bimestre BETWEEN 1 AND 4), -- 1 a 4
     Unidad TEXT,
     Criterio TEXT,
-    Nota DECIMAL(5,2),
+    Nota DECIMAL(5,2), -- Escala 0 a 20
     Peso DECIMAL(3,2) DEFAULT 1.0, -- Peso de la nota (ej: 0.3 para 30%)
     TipoNota TEXT DEFAULT 'Parcial', -- Parcial, Bimestral, Final
     Fecha DATE NOT NULL,
@@ -153,6 +153,25 @@ CREATE TABLE IF NOT EXISTS Notas (
     FOREIGN KEY (IdMateria) REFERENCES Materias(IdMateria),
     FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario)
 );
+
+-- Triggers para asegurar escala 0-20 en Notas (aplican a DB existente)
+CREATE TRIGGER IF NOT EXISTS trg_notas_validate_nota_insert
+BEFORE INSERT ON Notas
+FOR EACH ROW
+BEGIN
+  SELECT CASE WHEN NEW.Nota < 0 OR NEW.Nota > 20 THEN
+    RAISE(ABORT, 'Nota fuera de rango (0-20)')
+  END;
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_notas_validate_nota_update
+BEFORE UPDATE OF Nota ON Notas
+FOR EACH ROW
+BEGIN
+  SELECT CASE WHEN NEW.Nota < 0 OR NEW.Nota > 20 THEN
+    RAISE(ABORT, 'Nota fuera de rango (0-20)')
+  END;
+END;
 
 -- Tabla de Conceptos de Pago
 CREATE TABLE IF NOT EXISTS ConceptosPago (
@@ -354,77 +373,77 @@ INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, I
 INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (16, 6, 12, 8, 15);
 
 -- Insertar Asistencia
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (1, 1, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (2, 1, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (3, 1, '2024-01-17', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (4, 1, '2024-01-18', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (5, 1, '2024-01-19', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (6, 1, '2024-01-22', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (7, 2, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (8, 2, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (9, 2, '2024-01-17', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (10, 2, '2024-01-18', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (11, 2, '2024-01-19', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (12, 2, '2024-01-22', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (13, 3, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (14, 3, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (15, 3, '2024-01-17', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (16, 4, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (17, 4, '2024-01-16', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (18, 4, '2024-01-17', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (19, 5, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (20, 5, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (21, 5, '2024-01-17', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (22, 6, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (23, 6, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (24, 6, '2024-01-17', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (25, 7, '2024-01-15', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (26, 7, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (27, 7, '2024-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (1, 1, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (2, 1, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (3, 1, '2025-01-17', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (4, 1, '2025-01-18', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (5, 1, '2025-01-19', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (6, 1, '2025-01-22', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (7, 2, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (8, 2, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (9, 2, '2025-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (10, 2, '2025-01-18', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (11, 2, '2025-01-19', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (12, 2, '2025-01-22', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (13, 3, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (14, 3, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (15, 3, '2025-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (16, 4, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (17, 4, '2025-01-16', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (18, 4, '2025-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (19, 5, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (20, 5, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (21, 5, '2025-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (22, 6, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (23, 6, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (24, 6, '2025-01-17', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (25, 7, '2025-01-15', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (26, 7, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (27, 7, '2025-01-17', 1);
 
 -- Insertar Calendario
-INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (1, '2024-02-14', 'Día de San Valentín', 'Festivo');
-INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (2, '2024-03-15', 'Reunión de padres', 'Reunión');
-INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (3, '2024-04-01', 'Vacaciones de Semana Santa', 'Vacaciones');
+INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (1, '2025-02-14', 'Día de San Valentín', 'Festivo');
+INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (2, '2025-03-15', 'Reunión de padres', 'Reunión');
+INSERT OR IGNORE INTO Calendario (IdEvento, Fecha, Descripcion, Tipo) VALUES (3, '2025-04-01', 'Vacaciones de Semana Santa', 'Vacaciones');
 
 -- Insertar Citas
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (1, 1, 2, '2024-01-20', '14:00', 'Revisión de progreso de Ana');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (2, 1, 2, '2024-01-25', '15:30', 'Consulta sobre Luis');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (3, 2, 2, '2024-01-22', '10:00', 'Revisión de progreso de Sofia');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (4, 2, 2, '2024-01-22', '11:00', 'Consulta sobre Diego');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (5, 3, 2, '2024-01-23', '14:00', 'Reunión sobre Isabella');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (6, 4, 2, '2024-01-23', '15:00', 'Consulta sobre Mateo y Valentina');
-INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (7, 1, 2, '2024-01-24', '16:00', 'Seguimiento de Ana y Luis');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (1, 1, 2, '2025-01-20', '14:00', 'Revisión de progreso de Ana');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (2, 1, 2, '2025-01-25', '15:30', 'Consulta sobre Luis');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (3, 2, 2, '2025-01-22', '10:00', 'Revisión de progreso de Sofia');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (4, 2, 2, '2025-01-22', '11:00', 'Consulta sobre Diego');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (5, 3, 2, '2025-01-23', '14:00', 'Reunión sobre Isabella');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (6, 4, 2, '2025-01-23', '15:00', 'Consulta sobre Mateo y Valentina');
+INSERT OR IGNORE INTO Citas (IdCita, IdPadre, IdDocente, Fecha, Hora, Descripcion) VALUES (7, 1, 2, '2025-01-24', '16:00', 'Seguimiento de Ana y Luis');
 
 -- Insertar Notas (usando nueva estructura con materias)
 -- Notas de Primaria
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (1, 1, 2, 2, 'Unidad 1', 'Suma y resta básica', 8.5, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (2, 1, 1, 3, 'Unidad 1', 'Lectura comprensiva', 9.0, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (3, 1, 2, 2, 'Unidad 2', 'Multiplicación básica', 9.0, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (4, 1, 1, 3, 'Unidad 2', 'Escritura creativa', 8.5, 0.3, 'Parcial', '2024-01-19');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (5, 1, 4, 6, 'Unidad 1', 'El cuerpo humano', 7.5, 0.3, 'Parcial', '2024-01-20');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (6, 2, 2, 2, 'Unidad 1', 'Multiplicación', 7.5, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (7, 2, 4, 6, 'Unidad 1', 'Plantas y animales', 8.0, 0.3, 'Parcial', '2024-01-17');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (8, 2, 2, 2, 'Unidad 2', 'División', 8.0, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (9, 2, 3, 3, 'Unidad 1', 'Civilizaciones antiguas', 9.5, 0.3, 'Parcial', '2024-01-19');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (10, 2, 6, 6, 'Unidad 1', 'Coordinación motora', 8.5, 0.3, 'Parcial', '2024-01-20');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (11, 3, 2, 2, 'Unidad 1', 'Números del 1 al 100', 9.0, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (12, 3, 1, 3, 'Unidad 1', 'Lectura de cuentos', 8.0, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (13, 4, 2, 2, 'Unidad 1', 'Suma y resta con llevadas', 7.0, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (14, 4, 4, 6, 'Unidad 1', 'Los animales', 8.5, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (15, 5, 2, 2, 'Unidad 1', 'Números del 1 al 50', 9.5, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (16, 5, 5, 5, 'Unidad 1', 'Colores primarios', 10.0, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (17, 6, 2, 2, 'Unidad 1', 'Tablas de multiplicar', 8.0, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (18, 6, 1, 3, 'Unidad 1', 'Ortografía básica', 7.5, 0.3, 'Parcial', '2024-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (1, 1, 2, 2, 'Unidad 1', 'Suma y resta básica', 8.5, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (2, 1, 1, 3, 'Unidad 1', 'Lectura comprensiva', 9.0, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (3, 1, 2, 2, 'Unidad 2', 'Multiplicación básica', 9.0, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (4, 1, 1, 3, 'Unidad 2', 'Escritura creativa', 8.5, 0.3, 'Parcial', '2025-01-19');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (5, 1, 4, 6, 'Unidad 1', 'El cuerpo humano', 7.5, 0.3, 'Parcial', '2025-01-20');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (6, 2, 2, 2, 'Unidad 1', 'Multiplicación', 7.5, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (7, 2, 4, 6, 'Unidad 1', 'Plantas y animales', 8.0, 0.3, 'Parcial', '2025-01-17');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (8, 2, 2, 2, 'Unidad 2', 'División', 8.0, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (9, 2, 3, 3, 'Unidad 1', 'Civilizaciones antiguas', 9.5, 0.3, 'Parcial', '2025-01-19');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (10, 2, 6, 6, 'Unidad 1', 'Coordinación motora', 8.5, 0.3, 'Parcial', '2025-01-20');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (11, 3, 2, 2, 'Unidad 1', 'Números del 1 al 100', 9.0, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (12, 3, 1, 3, 'Unidad 1', 'Lectura de cuentos', 8.0, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (13, 4, 2, 2, 'Unidad 1', 'Suma y resta con llevadas', 7.0, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (14, 4, 4, 6, 'Unidad 1', 'Los animales', 8.5, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (15, 5, 2, 2, 'Unidad 1', 'Números del 1 al 50', 9.5, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (16, 5, 5, 5, 'Unidad 1', 'Colores primarios', 10.0, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (17, 6, 2, 2, 'Unidad 1', 'Tablas de multiplicar', 8.0, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (18, 6, 1, 3, 'Unidad 1', 'Ortografía básica', 7.5, 0.3, 'Parcial', '2025-01-16');
 -- Notas de Secundaria
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (19, 7, 10, 4, 'Unidad 1', 'Fracciones básicas', 9.0, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (20, 7, 12, 6, 'Unidad 1', 'El sistema solar', 8.5, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (21, 8, 10, 4, 'Unidad 1', 'Álgebra básica', 8.0, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (22, 8, 9, 5, 'Unidad 1', 'Análisis literario', 8.5, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (23, 9, 10, 4, 'Unidad 1', 'Geometría', 9.5, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (24, 9, 9, 5, 'Unidad 1', 'Redacción', 9.0, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (25, 10, 10, 4, 'Unidad 1', 'Trigonometría', 8.5, 0.3, 'Parcial', '2024-01-15');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (26, 10, 9, 5, 'Unidad 1', 'Análisis crítico', 9.5, 0.3, 'Parcial', '2024-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (19, 7, 10, 4, 'Unidad 1', 'Fracciones básicas', 9.0, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (20, 7, 12, 6, 'Unidad 1', 'El sistema solar', 8.5, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (21, 8, 10, 4, 'Unidad 1', 'Álgebra básica', 8.0, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (22, 8, 9, 5, 'Unidad 1', 'Análisis literario', 8.5, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (23, 9, 10, 4, 'Unidad 1', 'Geometría', 9.5, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (24, 9, 9, 5, 'Unidad 1', 'Redacción', 9.0, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (25, 10, 10, 4, 'Unidad 1', 'Trigonometría', 8.5, 0.3, 'Parcial', '2025-01-15');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (26, 10, 9, 5, 'Unidad 1', 'Análisis crítico', 9.5, 0.3, 'Parcial', '2025-01-16');
 
 -- Insertar Horarios de Materias
 -- Matemática Primaria (ID 2) - Lunes a Viernes
@@ -508,30 +527,30 @@ INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, I
 INSERT OR IGNORE INTO DocenteMateriaGrado (IdAsignacion, IdUsuario, IdMateria, IdGrado, IdSeccion) VALUES (22, 11, 1, 6, 11);
 
 -- Asistencia adicional
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (28, 16, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (29, 16, '2024-01-16', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (30, 17, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (31, 18, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (32, 18, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (33, 18, '2024-01-17', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (34, 19, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (35, 19, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (36, 20, '2024-01-15', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (37, 20, '2024-01-16', 1);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (38, 21, '2024-01-15', 0);
-INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (39, 21, '2024-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (28, 16, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (29, 16, '2025-01-16', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (30, 17, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (31, 18, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (32, 18, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (33, 18, '2025-01-17', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (34, 19, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (35, 19, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (36, 20, '2025-01-15', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (37, 20, '2025-01-16', 1);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (38, 21, '2025-01-15', 0);
+INSERT OR IGNORE INTO Asistencia (IdAsistencia, IdHijo, Fecha, Asistio) VALUES (39, 21, '2025-01-16', 1);
 
 -- Notas adicionales
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (27, 16, 3, 11, 'Unidad 1', 'Historia del Perú', 8.0, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (28, 16, 5, 11, 'Unidad 1', 'Dibujo y color', 9.0, 0.3, 'Parcial', '2024-01-19');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (29, 17, 2, 2, 'Unidad 1', 'Suma y resta', 8.5, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (30, 18, 12, 12, 'Unidad 1', 'Física básica', 7.5, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (31, 18, 10, 12, 'Unidad 1', 'Ecuaciones', 8.0, 0.3, 'Parcial', '2024-01-17');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (32, 19, 9, 5, 'Unidad 1', 'Lectura crítica', 9.0, 0.3, 'Parcial', '2024-01-16');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (33, 19, 10, 4, 'Unidad 1', 'Geometría plana', 8.5, 0.3, 'Parcial', '2024-01-17');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (34, 20, 2, 2, 'Unidad 1', 'División', 7.5, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (35, 21, 10, 4, 'Unidad 1', 'Trigonometría', 8.0, 0.3, 'Parcial', '2024-01-18');
-INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (36, 21, 9, 5, 'Unidad 1', 'Reseña literaria', 8.5, 0.3, 'Parcial', '2024-01-19');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (27, 16, 3, 11, 'Unidad 1', 'Historia del Perú', 8.0, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (28, 16, 5, 11, 'Unidad 1', 'Dibujo y color', 9.0, 0.3, 'Parcial', '2025-01-19');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (29, 17, 2, 2, 'Unidad 1', 'Suma y resta', 8.5, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (30, 18, 12, 12, 'Unidad 1', 'Física básica', 7.5, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (31, 18, 10, 12, 'Unidad 1', 'Ecuaciones', 8.0, 0.3, 'Parcial', '2025-01-17');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (32, 19, 9, 5, 'Unidad 1', 'Lectura crítica', 9.0, 0.3, 'Parcial', '2025-01-16');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (33, 19, 10, 4, 'Unidad 1', 'Geometría plana', 8.5, 0.3, 'Parcial', '2025-01-17');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (34, 20, 2, 2, 'Unidad 1', 'División', 7.5, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (35, 21, 10, 4, 'Unidad 1', 'Trigonometría', 8.0, 0.3, 'Parcial', '2025-01-18');
+INSERT OR IGNORE INTO Notas (IdNota, IdHijo, IdMateria, IdUsuario, Unidad, Criterio, Nota, Peso, TipoNota, Fecha) VALUES (36, 21, 9, 5, 'Unidad 1', 'Reseña literaria', 8.5, 0.3, 'Parcial', '2025-01-19');
 
 -- Horarios adicionales
 INSERT OR IGNORE INTO HorariosMaterias (IdHorario, IdMateria, DiaSemana, HoraInicio, HoraFin) VALUES (15, 12, 'Martes', '10:00', '11:00');

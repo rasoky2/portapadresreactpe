@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { Database } from '@/lib/database'
 
 const db = new Database()
+const DEFAULT_TEST_MP_TOKEN = 'TEST-8563921263786667-101707-4ee74c73a3abc6290a5361897367087a-2908645408'
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
         token = await db.getSetting('MP_ACCESS_TOKEN')
       } catch {}
       if (!token) token = process.env.MP_ACCESS_TOKEN || null
+      if (!token) token = DEFAULT_TEST_MP_TOKEN
       if (!token) return NextResponse.json({ ok: true })
 
       const payRes = await fetch(`https://api.mercadopago.com/v1/payments/${id}`, {

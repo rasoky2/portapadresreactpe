@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { Database } from '@/lib/database'
 
 const db = new Database()
+const DEFAULT_TEST_MP_TOKEN = 'TEST-8563921263786667-101707-4ee74c73a3abc6290a5361897367087a-2908645408'
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'ID de factura requerido' }, { status: 400 })
     }
 
-    // Prioridad: token en request (UI) -> token guardado en Settings -> variable de entorno (fallback)
+    // Prioridad: token en request (UI) -> token guardado en Settings -> variable de entorno -> token de prueba por defecto
     let token = accessToken as string | undefined
     if (!token) {
       try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       token = process.env.MP_ACCESS_TOKEN
     }
     if (!token) {
-      return NextResponse.json({ message: 'Configura MP_ACCESS_TOKEN en .env.local' }, { status: 500 })
+      token = DEFAULT_TEST_MP_TOKEN
     }
 
     // Obtener datos de la factura
@@ -41,39 +42,48 @@ export async function POST(request: Request) {
 
     const origin = new URL(request.url).origin
 
-    // Crear Preference en Mercado Pago
-    const prefRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+    // Crear Preference en Mercado Pago con reintentos de moneda
+    const buildBody = (currency: 'PEN' | 'ARS' | 'USD') => ({
+      items: [
+        {
+          title: `Factura #${factura.NumeroFactura}`,
+          quantity: 1,
+          unit_price: Number(factura.Total),
+          currency_id: currency
+        }
+      ],
+      external_reference: String(factura.IdFactura),
+      back_urls: {
+        success: `${origin}/parent/payments?mp_status=success`,
+        failure: `${origin}/parent/payments?mp_status=failure`,
+        pending: `${origin}/parent/payments?mp_status=pending`
       },
-      body: JSON.stringify({
-        items: [
-          {
-            title: `Factura #${factura.NumeroFactura}`,
-            quantity: 1,
-            unit_price: Number(factura.Total),
-            currency_id: 'PEN'
-          }
-        ],
-        external_reference: String(factura.IdFactura),
-        back_urls: {
-          success: `${origin}/parent/payments?mp_status=success`,
-          failure: `${origin}/parent/payments?mp_status=failure`,
-          pending: `${origin}/parent/payments?mp_status=pending`
-        },
-        auto_return: 'approved',
-        notification_url: `${origin}/api/payments/mercadopago/webhook`
-      })
+      notification_url: `${origin}/api/payments/mercadopago/webhook`
     })
 
-    if (!prefRes.ok) {
-      const text = await prefRes.text()
-      return NextResponse.json({ message: 'Error creando preferencia', error: text }, { status: 502 })
+    const currencies: Array<'PEN' | 'ARS' | 'USD'> = ['PEN', 'ARS', 'USD']
+    let lastError: any = null
+    for (const currency of currencies) {
+      const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(buildBody(currency))
+      })
+      if (res.ok) {
+        const pref = await res.json()
+        return NextResponse.json({ ok: true, init_point: pref.init_point || pref.sandbox_init_point, currency })
+      }
+      try {
+        lastError = await res.json()
+      } catch {
+        lastError = { status: res.status, text: await res.text() }
+      }
     }
-    const pref = await prefRes.json()
-    return NextResponse.json({ init_point: pref.init_point || pref.sandbox_init_point })
+
+    return NextResponse.json({ ok: false, message: 'Error creando preferencia', error: lastError })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error interno del servidor'
     return NextResponse.json({ message }, { status: 500 })

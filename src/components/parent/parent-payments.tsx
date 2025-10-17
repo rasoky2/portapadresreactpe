@@ -40,6 +40,8 @@ export default function ParentPayments() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [mpDialogOpen, setMpDialogOpen] = useState(false)
+  const [mpInitPoint, setMpInitPoint] = useState<string | null>(null)
   const { toasts, showError, showSuccess, removeToast } = useToast()
 
   // TODO: Obtener el ID del padre desde la sesión de autenticación
@@ -283,14 +285,16 @@ export default function ParentPayments() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(`/admin/payments/invoice/${factura.IdFactura}`, '_blank')}
-                        title="Descargar/Imprimir PDF"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      {factura.Estado === 'Pagada' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/admin/payments/invoice/${factura.IdFactura}`, '_blank')}
+                          title="Descargar/Imprimir PDF"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      )}
                       {(factura.Estado === 'Pendiente' || factura.Estado === 'Vencida') && (
                         <div className="flex gap-2">
                           <Button
@@ -327,7 +331,18 @@ export default function ParentPayments() {
                                   body: JSON.stringify({ facturaId: factura.IdFactura, accessToken })
                                 })
                                 const data = await res.json()
-                                if (data?.init_point) window.location.href = data.init_point
+                                if (!data?.ok) {
+                                  showError('Mercado Pago', data?.error?.message || 'No se pudo iniciar el checkout')
+                                  return
+                                }
+                                if (data?.init_point) {
+                                  setMpInitPoint(data.init_point as string)
+                                  const win = window.open(data.init_point as string, '_blank', 'noopener,noreferrer')
+                                  if (!win) {
+                                    showError('Bloqueo de ventana', 'Permite ventanas emergentes para continuar con el pago')
+                                  }
+                                  setMpDialogOpen(true)
+                                }
                               } catch {
                                 // noop
                               }
@@ -347,6 +362,44 @@ export default function ParentPayments() {
           </div>
         </CardContent>
       </Card>
+
+      {mpDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMpDialogOpen(false)}></div>
+          <div className="relative bg-white w-full max-w-md mx-auto rounded-lg shadow-lg p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Completa tu pago en Mercado Pago</h3>
+                <p className="mt-2 text-sm text-gray-600">Se abrió una nueva pestaña con el Checkout. Una vez finalizado, presiona "Verificar pago" para actualizar el estado de la factura.</p>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <Button
+                onClick={async () => {
+                  await fetchFacturas()
+                  showSuccess('Actualizado', 'Se verificó el estado de tus facturas')
+                }}
+              >
+                Verificar pago
+              </Button>
+              {mpInitPoint && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const win = window.open(mpInitPoint as string, '_blank', 'noopener,noreferrer')
+                    if (!win) {
+                      showError('Bloqueo de ventana', 'Permite ventanas emergentes para continuar con el pago')
+                    }
+                  }}
+                >
+                  Reabrir Checkout
+                </Button>
+              )}
+              <Button variant="ghost" onClick={() => setMpDialogOpen(false)}>Cerrar</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
